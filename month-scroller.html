@@ -7,9 +7,9 @@
         display: block;
         overflow-x: scroll;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: 44px;
-        margin-bottom: -30px;
-        background-color: rgba(225, 228, 231, 1);
+        padding-bottom: 100px;
+        margin-bottom: -60px;
+        background-color: hsl(230, 10%, 90%);
         position: relative;
       }
 
@@ -89,7 +89,7 @@
         // Generate 12 dummy months
         for (var i = 1; i <= 12; i++) {
           var html = `<div class="month">`;
-          html += `<div class="header">${i}</div>`;
+          html += `<div class="header">${this.getMonthName(i)}</div>`;
           for (var j = 1; j <= 31; j++) {
             html += `<div class="day">${j}</div>`;
           }
@@ -105,14 +105,15 @@
           months.style.transform = "translateX(0)";
           setTimeout(function() {
             months.style.transition = "";
-          }, 10);
+            this.style.overflowX = "";
+            this.style.webkitOverflowScrolling = "";
+          }.bind(this), 10);
         }.bind(this);
 
         const scrollTo = function(offset) {
           this._scrollOffset = offset;
           months.addEventListener("transitionend", finishScrollTo);
           months.style.transform = `translateX(${-offset}px)`;
-
           this.month = Math.round(this.scrollLeft / this.offsetWidth) + 1;
         }.bind(this);
 
@@ -127,14 +128,40 @@
         }.bind(this);
 
         var snapTimeout;
+        var lastScrollDelta = [];
+        var lastScrollLeft = -1;
+        var stopping = false;
 
         this.addEventListener("scroll", function(e) {
+          lastScrollDelta.push(Math.abs(lastScrollLeft - this.scrollLeft));
+
+          // if(stopping && lastScrollLeft >= 0) {
+          //   this.scrollLeft = lastScrollLeft;
+          //   return;
+          // }
+          // if (!stopping && lastScrollDelta.length > 8 && lastScrollDelta[lastScrollDelta.length - 1] < 10) {
+          //   stopping = true;
+          //   this.style.overflow = "hidden";
+          //   this.style.webkitOverflowScrolling = "auto";
+          //   setTimeout(function() {
+          //     stopping = false;
+          //     this.style.overflow = "";
+          //     this.style.webkitOverflowScrolling = "";
+          //   }.bind(this), 10);
+          // } else {
+          //   lastScrollLeft = this.scrollLeft;
+          // }
+
           clearTimeout(snapTimeout);
           snapTimeout = setTimeout(snap, 100);
         }.bind(this));
 
         // Scroll to current month
         setTimeout(this.scrollToMonth.bind(this), 0);
+      }
+
+      getMonthName(month) {
+        return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][month-1];
       }
     }
 
