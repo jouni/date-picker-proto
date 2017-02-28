@@ -15,17 +15,6 @@
         position: relative;
       }
 
-      :host::after {
-        content: "";
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        height: 44px;
-        pointer-events: none;
-        background-image: linear-gradient(90deg, #8B939E 0%, rgba(139,147,158,0.00) 40%, rgba(139,147,158,0.00) 60%, #8B939E 100%);
-      }
-
       .years {
         display: flex;
         width: calc(14 * 65px);
@@ -39,30 +28,9 @@
         text-align: center;
         font-weight: 400;
       }
-
-      .glass {
-        position: fixed;
-        bottom: 44px;
-        height: 264px;
-        width: 100vw;
-        background-color: rgba(225, 228, 231, 1);
-        color: #000;
-        font-size: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-      }
-
-      .glass.show {
-        opacity: 1;
-      }
     </style>
 
     <div class="years"></div>
-    <div class="glass">[[month]] / [[year]]</div>
 
   </template>
 
@@ -80,6 +48,11 @@
           },
           month: {
             type: Number,
+            notify: true
+          },
+          yearScrolling: {
+            type: Boolean,
+            value: false,
             notify: true
           }
         }
@@ -103,11 +76,16 @@
           years.innerHTML += `<div class="year year-${i}">${i}</div>`;
         }
 
+        var hideGlassTimeout;
         this.addEventListener("scroll", function(e) {
           var newYear = 2010 + Math.round(this.scrollLeft / 65);
           // var yearEl = this.root.querySelector(".year-"+newYear);
           this.year = newYear;
-          
+
+          this.yearScrolling = true;
+          var self = this;
+          clearTimeout(hideGlassTimeout);
+          hideGlassTimeout = setTimeout(function() {self.yearScrolling = false}, 300);
         }.bind(this));
 
         // Scroll to current year
