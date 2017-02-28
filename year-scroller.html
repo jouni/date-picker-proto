@@ -1,0 +1,127 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="year-scroller">
+  <template>
+    <style>
+      :host {
+        display: block;
+        overflow-x: scroll;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 30px;
+        margin-bottom: -30px;
+        height: 44px;
+        background-color: #8B939E;
+        color: #ECEEF2;
+        position: relative;
+      }
+
+      :host::after {
+        content: "";
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 44px;
+        pointer-events: none;
+        background-image: linear-gradient(90deg, #8B939E 0%, rgba(139,147,158,0.00) 40%, rgba(139,147,158,0.00) 60%, #8B939E 100%);
+      }
+
+      .years {
+        display: flex;
+        width: calc(14 * 65px);
+        transition: transform 0.3s;
+        padding: 0 calc(50vw - 65px / 2);
+      }
+
+      .year {
+        width: 65px;
+        line-height: 44px;
+        text-align: center;
+        font-weight: 400;
+      }
+
+      .glass {
+        position: fixed;
+        bottom: 44px;
+        height: 264px;
+        width: 100vw;
+        background-color: rgba(225, 228, 231, 1);
+        color: #000;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+
+      .glass.show {
+        opacity: 1;
+      }
+    </style>
+
+    <div class="years"></div>
+    <div class="glass">[[month]] / [[year]]</div>
+
+  </template>
+
+  <script>
+    class YearScroller extends Polymer.Element {
+      static get is() {
+        return 'year-scroller';
+      }
+
+      static get properties() {
+        return {
+          year: {
+            type: Number,
+            notify: true
+          },
+          month: {
+            type: Number,
+            notify: true
+          }
+        }
+      }
+
+      static get observers() {
+        return [ /* observer descriptors */ ]
+      }
+
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        const years = this.root.querySelector(".years");
+
+        // Generate 10 dummy years
+        for (var i = 2010; i <= 2023; i++) {
+          years.innerHTML += `<div class="year year-${i}">${i}</div>`;
+        }
+
+        this.addEventListener("scroll", function(e) {
+          var newYear = 2010 + Math.round(this.scrollLeft / 65);
+          // var yearEl = this.root.querySelector(".year-"+newYear);
+          this.year = newYear;
+          
+        }.bind(this));
+
+        // Scroll to current year
+        setTimeout(this.scrollToYear.bind(this), 0);
+
+      }
+
+      scrollToYear(year) {
+        year = year || this.year;
+        this.scrollLeft = (year - 2010) * 65;
+      }
+    }
+
+    customElements.define(YearScroller.is, YearScroller);
+
+  </script>
+</dom-module>

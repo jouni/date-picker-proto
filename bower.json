@@ -1,0 +1,21 @@
+{
+  "name": "date-picker",
+  "authors": [
+    "Jouni Koivuviita <jouni@jouni.me>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "polymer/polymer#2.0-preview"
+  }
+}

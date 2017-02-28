@@ -1,0 +1,137 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="month-scroller">
+  <template>
+    <style>
+      :host {
+        display: block;
+        overflow-x: scroll;
+        -webkit-overflow-scrolling: touch;
+        padding: 14px;
+        padding-bottom: 44px;
+        margin-bottom: -30px;
+      }
+
+      .months {
+        display: flex;
+        width: calc(12 * 100vw);
+        transition: transform 0.3s;
+      }
+
+      .month {
+        display: flex;
+        width: 100vw;
+        flex-wrap: wrap;
+        padding: 0 14px;
+        box-sizing: border-box;
+      }
+
+      .month .header {
+        width: 100vw;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 600px;
+        padding-bottom: 14px;
+      }
+
+      .day {
+        width: calc((100vw - 28px) / 7);
+        height: 40px;
+      }
+    </style>
+
+    <div class="months"></div>
+  </template>
+
+  <script>
+    class MonthScroller extends Polymer.Element {
+      static get is() {
+        return 'month-scroller';
+      }
+
+      static get properties() {
+        return {
+          year: {
+            type: Number,
+            notify: true
+          },
+          month: {
+            type: Number,
+            notify: true
+          }
+        }
+      }
+
+      static get observers() {
+        return [ /* observer descriptors */ ]
+      }
+
+      constructor() {
+        super();
+      }
+
+      scrollToMonth(month) {
+        this.scrollLeft = this.offsetWidth * ((month || this.month) - 1);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        const months = this.root.querySelector(".months");
+
+        // Generate 12 dummy months
+        for (var i = 1; i <= 12; i++) {
+          var html = `<div class="month">`;
+          html += `<div class="header">${i}</div>`;
+          for (var j = 1; j <= 31; j++) {
+            html += `<div class="day">${j}</div>`;
+          }
+          html += `</div>`;
+          months.innerHTML += html;
+        }
+
+        // Fake smooth scrollTo animation
+        const finishScrollTo = function() {
+          months.removeEventListener("transitionend", finishScrollTo);
+          this.scrollLeft += this._scrollOffset;
+          months.style.transition = "none";
+          months.style.transform = "translateX(0)";
+          setTimeout(function() {
+            months.style.transition = "";
+          }, 10);
+        }.bind(this);
+
+        const scrollTo = function(offset) {
+          this._scrollOffset = offset;
+          months.addEventListener("transitionend", finishScrollTo);
+          months.style.transform = `translateX(${-offset}px)`;
+
+          this.month = Math.round(this.scrollLeft / this.offsetWidth) + 1;
+        }.bind(this);
+
+        // Emulate scroll snap points (very crudely)
+        const snap = function() {
+          var offset = this.scrollLeft % this.offsetWidth;
+          if (offset < this.offsetWidth / 2) {
+            scrollTo(-offset);
+          } else {
+            scrollTo(this.offsetWidth - offset);
+          }
+        }.bind(this);
+
+        var snapTimeout;
+
+        this.addEventListener("scroll", function(e) {
+          clearTimeout(snapTimeout);
+          snapTimeout = setTimeout(snap, 100);
+        }.bind(this));
+
+        // Scroll to current month
+        setTimeout(this.scrollToMonth.bind(this), 0);
+      }
+    }
+
+    customElements.define(MonthScroller.is, MonthScroller);
+
+  </script>
+</dom-module>
