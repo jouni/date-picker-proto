@@ -82,22 +82,64 @@
           years.innerHTML += `<div class="year year-${i}">${i}</div>`;
         }
 
+        // Fake smooth scrollTo animation
+        var avoidScrollListener = false;
+        const finishScrollTo = function() {
+          years.removeEventListener("transitionend", finishScrollTo);
+          avoidScrollListener = true;
+          this.scrollLeft += this._scrollOffset;
+          this.fastScrolling = false;
+          years.style.transition = "none";
+          years.style.transform = "";
+          setTimeout(function() {
+            years.style.transition = "";
+            avoidScrollListener = false;
+          }.bind(this), 20);
+        }.bind(this);
+
+        const scrollTo = function(offset) {
+          this._scrollOffset = offset;
+          years.addEventListener("transitionend", finishScrollTo);
+          years.style.transform = `translateX(${-offset}px)`;
+          // this.month = Math.round(this.scrollLeft / this.offsetWidth) + 1;
+        }.bind(this);
+
+        const snap = function() {
+          var offset = this.scrollLeft % 65;
+          if (offset < 65 / 2) {
+            scrollTo(-offset);
+          } else {
+            scrollTo(65 - offset);
+          }
+          this.fastScrolling = false;
+        }.bind(this);
+
         var hideGlassTimeout;
         var currentYearEl;
+        var snapTimeout;
         this.addEventListener("scroll", function(e) {
+
           var newYear = 2010 + Math.round(this.scrollLeft / 65);
-          if(currentYearEl) {
+          if (currentYearEl) {
             currentYearEl.classList.remove("current");
           }
-          var yearEl = this.root.querySelector(".year-"+newYear);
+          var yearEl = this.root.querySelector(".year-" + newYear);
           yearEl.classList.add("current");
           currentYearEl = yearEl;
           this.year = newYear;
 
+          if(avoidScrollListener)
+            return;
+
           this.fastScrolling = true;
-          var self = this;
+
           clearTimeout(hideGlassTimeout);
-          hideGlassTimeout = setTimeout(function() {self.fastScrolling = false}, 300);
+          hideGlassTimeout = setTimeout(function() {
+            this.fastScrolling = false;
+          }.bind(this), 300);
+
+          clearTimeout(snapTimeout);
+          snapTimeout = setTimeout(snap, 100);
         }.bind(this));
 
         // Scroll to current year
@@ -105,7 +147,9 @@
 
         years.addEventListener("click", function(e) {
           if (e.target.classList.contains("year")) {
+            avoidScrollListener = true;
             this.scrollToYear(parseInt(e.target.textContent));
+            setTimeout(function() {avoidScrollListener = false;}, 10);
           }
         }.bind(this));
       }

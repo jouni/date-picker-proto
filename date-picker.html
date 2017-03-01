@@ -10,6 +10,7 @@
         font-size: 18px;
         -webkit-tap-highlight-color: transparent;
         -webkit-font-smoothing: antialiased;
+        cursor: default;
       }
 
       input {
@@ -99,7 +100,7 @@
       }
 
       .glass[show] {
-        opacity: 0.9;
+        opacity: 0.93;
       }
 
       .years {
@@ -193,6 +194,11 @@
 
         const input = this.root.querySelector("input");
         const overlay = this.root.querySelector("#overlay");
+        const cancel = this.root.querySelector("#cancel");
+        const today = this.root.querySelector("#today");
+        const set = this.root.querySelector("#set");
+        const monthScroller = this.root.querySelector("month-scroller");
+        const yearScroller = this.root.querySelector("year-scroller");
 
         input.addEventListener("focus", function() {
           overlay.classList.add("open");
@@ -202,6 +208,23 @@
           if(e.target == overlay)
             overlay.classList.remove("open");
         });
+
+        cancel.addEventListener("click", function(e) {
+          overlay.classList.remove("open");
+          monthScroller.selectDate();
+        }.bind(this));
+
+        today.addEventListener("click", function(e) {
+          var today = new Date();
+          monthScroller.selectDate(today.getDate(), today.getMonth() + 1);
+          monthScroller.scrollToMonth(today.getMonth() + 1);
+          yearScroller.scrollToYear(today.getYear() + 1900);
+        }.bind(this));
+
+        set.addEventListener("click", function(e) {
+          overlay.classList.remove("open");
+          // this.selectedDate = "";
+        }.bind(this));
       }
 
       getMonthName(month) {

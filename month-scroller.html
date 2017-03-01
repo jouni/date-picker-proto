@@ -109,15 +109,12 @@
           months.innerHTML += html;
         }
 
+        var scrolling = false;
         months.addEventListener("click", function(e) {
-          if (e.target.classList.contains("day")) {
+          if (!scrolling && e.target.classList.contains("day")) {
             var month = parseInt(e.target.parentNode.getAttribute("data-month"));
             var day = parseInt(e.target.textContent);
-            this.selectedDate = month + "/" + day + "/" + this.year;
-
-            if(this.root.querySelector(".selected-day"))
-              this.root.querySelector(".selected-day").classList.remove("selected-day");
-            e.target.classList.add("selected-day");
+            this.selectDate(day, month, e.target);
           }
         }.bind(this));
 
@@ -129,12 +126,11 @@
           this.scrollLeft += this._scrollOffset;
           this.fastScrolling = false;
           months.style.transition = "none";
-          months.style.transform = "translateX(0)";
+          months.style.transform = "";
           setTimeout(function() {
             months.style.transition = "";
-            this.style.overflowX = "";
-            this.style.webkitOverflowScrolling = "";
-          }.bind(this), 10);
+            scrolling = false;
+          }.bind(this), 20);
         }.bind(this);
 
         const scrollTo = function(offset) {
@@ -158,9 +154,10 @@
         var snapTimeout;
         var lastScrollDelta = [];
         var lastScrollLeft = -1;
-        var stopping = false;
 
         this.addEventListener("scroll", function(e) {
+          scrolling = true;
+
           lastScrollDelta.push(Math.abs(lastScrollLeft - this.scrollLeft));
           lastScrollLeft = this.scrollLeft;
           this.month = Math.round(this.scrollLeft / this.offsetWidth) + 1;
@@ -174,23 +171,6 @@
 
           avoidGlass = false;
 
-          // if(stopping && lastScrollLeft >= 0) {
-          //   this.scrollLeft = lastScrollLeft;
-          //   return;
-          // }
-          // if (!stopping && lastScrollDelta.length > 8 && lastScrollDelta[lastScrollDelta.length - 1] < 10) {
-          //   stopping = true;
-          //   this.style.overflow = "hidden";
-          //   this.style.webkitOverflowScrolling = "auto";
-          //   setTimeout(function() {
-          //     stopping = false;
-          //     this.style.overflow = "";
-          //     this.style.webkitOverflowScrolling = "";
-          //   }.bind(this), 10);
-          // } else {
-          //   lastScrollLeft = this.scrollLeft;
-          // }
-
           clearTimeout(snapTimeout);
           snapTimeout = setTimeout(snap, 100);
         }.bind(this));
@@ -201,6 +181,18 @@
 
       getMonthName(month) {
         return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][month - 1];
+      }
+
+      selectDate(day, month) {
+        if (this.root.querySelector(".selected-day")) {
+          this.root.querySelector(".selected-day").classList.remove("selected-day");
+          this.selectedDate = "";
+        }
+
+        if(day && month) {
+          this.selectedDate = month + "/" + day + "/" + this.year;
+          this.root.querySelectorAll(".month")[month-1].querySelectorAll(".day")[day-1].classList.add("selected-day");
+        }
       }
     }
 
