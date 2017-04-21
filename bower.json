@@ -16,6 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "polymer/polymer#2.0-preview"
+    "polymer": "polymer/polymer#2.0.0-rc.7"
   }
 }

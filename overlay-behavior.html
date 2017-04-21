@@ -1,0 +1,103 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="overlay-behavior">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .overlay {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #eee;
+        box-shadow: 0 0 30px -6px rgba(0,0,0,0.3);
+        pointer-events: none;
+        transform: translateY(100vh);
+        transition: transform 0.3s cubic-bezier(0.600, 0.040, 0.980, 0.335);
+      }
+
+      :host([allow-os-keyboard]) .overlay {
+        height: 75vh;
+      }
+
+      .overlay.open {
+        pointer-events: auto;
+        transform: translateY(0);
+        transition-timing-function: cubic-bezier(0.075, 0.820, 0.165, 1.000);
+      }
+
+      .input {
+        background: #fff;
+        border: 1px solid;
+        -webkit-appearance: none;
+        height: 30px;
+        box-sizing: border-box;
+      }
+    </style>
+
+    <input class="input" type="text" value="input value">
+    <div class="overlay">Overlay content</div>
+  </template>
+
+  <script>
+    class OverlayBehavior extends Polymer.Element {
+      static get is() {
+        return 'overlay-behavior';
+      }
+
+      static get properties() {
+        return {
+          allowOsKeyboard: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          }
+        }
+      }
+
+      static get observers() {
+        return [ /* observer descriptors */ ]
+      }
+
+      constructor() {
+        super();
+
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        const input = this.root.querySelector(".input");
+        const overlay = this.root.querySelector(".overlay");
+
+        if (!this.allowOsKeyboard) {
+          input.addEventListener("keydown", function(e) {
+            e.preventDefault();
+          });
+        }
+
+        // console.log(input.getBoundingClientRect());
+        // console.log(document.body.getBoundingClientRect());
+
+        input.addEventListener("focus", function(e) {
+          // overlay.classList.add("open");
+          setTimeout(function() {
+            const rect = input.getBoundingClientRect();
+            console.log(rect.top, rect.bottom);
+            // console.log(document.body.getBoundingClientRect());
+          }.bind(this), 300);
+        });
+      }
+    }
+
+    customElements.define(OverlayBehavior.is, OverlayBehavior);
+
+  </script>
+</dom-module>

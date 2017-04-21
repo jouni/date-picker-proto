@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>overlay behavior proto</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../overlay-behavior.html">
+  <style>
+    body {
+      margin: 0;
+      background: #ddd;
+      padding: 20px;
+      border: 1px dashed;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <overlay-behavior></overlay-behavior>
+  <div style="height: 250px"></div>
+  <overlay-behavior></overlay-behavior>
+  <overlay-behavior></overlay-behavior>
+  <div style="height: 250px"></div>
+  <overlay-behavior allow-os-keyboard></overlay-behavior>
+</body>
+
+</html>
