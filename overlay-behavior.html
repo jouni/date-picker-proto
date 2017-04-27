@@ -1,36 +1,46 @@
 <link rel="import" href="../polymer/polymer-element.html">
 
+<style>
+  /* Assuming overlay is appended to body */
+
+  .overlay {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: green;
+    box-shadow: 0 0 30px -6px rgba(0, 0, 0, 0.3);
+    height: 100vh;
+    min-height: 60vh;
+    opacity: 0.8;
+
+    /* Minimum visible area above on-screen-keyboard */
+    --space-above-overlay: 140px;
+    max-height: calc(100vh - var(--space-above-overlay));
+    /*pointer-events: none;*/
+    /*transform: translateY(100vh);*/
+    /*transition: transform 0.3s cubic-bezier(0.600, 0.040, 0.980, 0.335);*/
+  }
+
+  body {
+    position: relative;
+  }
+  /*.overlay.open {
+    pointer-events: auto;
+    transform: translateY(0);
+    transition-timing-function: cubic-bezier(0.075, 0.820, 0.165, 1.000);
+  }*/
+
+</style>
+
 <dom-module id="overlay-behavior">
   <template>
     <style>
       :host {
         display: block;
-      }
-
-      .overlay {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 50vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #eee;
-        box-shadow: 0 0 30px -6px rgba(0,0,0,0.3);
-        pointer-events: none;
-        transform: translateY(100vh);
-        transition: transform 0.3s cubic-bezier(0.600, 0.040, 0.980, 0.335);
-      }
-
-      :host([allow-os-keyboard]) .overlay {
-        height: 75vh;
-      }
-
-      .overlay.open {
-        pointer-events: auto;
-        transform: translateY(0);
-        transition-timing-function: cubic-bezier(0.075, 0.820, 0.165, 1.000);
       }
 
       .input {
@@ -40,10 +50,14 @@
         height: 30px;
         box-sizing: border-box;
       }
+
+      :host([allow-keyboard])::after {
+        content: " allow keyboard";
+      }
     </style>
 
-    <input class="input" type="text" value="input value">
-    <div class="overlay">Overlay content</div>
+    <input class="input" type="text" value="input with overlay">
+    <div class="overlay">Overlay content <button onclick="console.log('click')">button</button></div>
   </template>
 
   <script>
@@ -54,10 +68,9 @@
 
       static get properties() {
         return {
-          allowOsKeyboard: {
+          allowKeyboard: {
             type: Boolean,
-            value: false,
-            reflectToAttribute: true
+            value: false
           }
         }
       }
@@ -76,23 +89,71 @@
 
         const input = this.root.querySelector(".input");
         const overlay = this.root.querySelector(".overlay");
+        overlay.parentNode.removeChild(overlay);
 
-        if (!this.allowOsKeyboard) {
-          input.addEventListener("keydown", function(e) {
-            e.preventDefault();
-          });
+        // readonly fields can be focused on ios as well, but they are not in the tab order, so we
+        // need to toggle readonly dynamically to support “tabbing through” the fields
+        const ios = navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/);
+        if (!ios) {
+          // TODO this should basically only be applied for android phones
+          input.readOnly = !this.allowKeyboard;
         }
 
-        // console.log(input.getBoundingClientRect());
-        // console.log(document.body.getBoundingClientRect());
-
         input.addEventListener("focus", function(e) {
-          // overlay.classList.add("open");
+          if (ios && !this.allowKeyboard && !input.readOnly) {
+            input.readOnly = true;
+            setTimeout(function() {
+              input.blur();
+              input.focus();
+              input.readOnly = false;
+            }, 0);
+            return;
+          }
+
+          document.body.appendChild(overlay);
+          repositionOverlay();
+
+          // Giving OS a bit of time to start its own transitions makes this more reliable somehow
           setTimeout(function() {
-            const rect = input.getBoundingClientRect();
-            console.log(rect.top, rect.bottom);
-            // console.log(document.body.getBoundingClientRect());
+            const selfRect = this.getBoundingClientRect();
+            const overlayRect = overlay.getBoundingClientRect();
+
+
+            if (selfRect.bottom + 30 > overlayRect.top) {
+              // document.body.scrollTop += selfRect.top - overlayRect.top + selfRect.height + 50;
+              // alert(selfRect.bottom + 30 - overlayRect.top);
+              document.scrollingElement.scrollTop += selfRect.bottom + 30 - overlayRect.top;
+            }
           }.bind(this), 300);
+        }.bind(this));
+
+        input.addEventListener("blur", function(e) {
+          if (overlay.parentNode) {
+            document.body.removeChild(overlay);
+          }
+        });
+
+        function repositionOverlay() {
+          if (overlay.parentNode) {
+            const spaceAboveOverlay = getComputedStyle(overlay).getPropertyValue("--space-above-overlay");
+            overlay.style.top = `calc(${ window.scrollY }px + ${ spaceAboveOverlay })`;
+          }
+        }
+
+        document.addEventListener("scroll", function(e) {
+          repositionOverlay();
+        }, true);
+
+        overlay.addEventListener("touchend", function(e) {
+          // var context = e.target;
+          // do {
+            // if (content == overlay) {
+            // e.stopPropagation();
+            setTimeout(function() {
+              input.focus();
+            },100)
+            // }
+          // }
         });
       }
     }

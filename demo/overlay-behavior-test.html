@@ -5,26 +5,63 @@
   <title>overlay behavior proto</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <script>window.ShadyDOM = { force: true };</script>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../overlay-behavior.html">
   <style>
     body {
       margin: 0;
-      background: #ddd;
+      background-color: #ddd;
       padding: 20px;
       border: 1px dashed;
       min-height: 100vh;
+    }
+    .scroller {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid;
+      padding: 20px;
+      max-height: 200px;
+    }
+    .fixed-container {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      left: 50%;
+      background: rgba(0,0,0,0.1);
     }
   </style>
 </head>
 
 <body>
+  <div class="scroller">
+    1
+    <input type="text" value="regular input"><br>
+    2
+    <overlay-behavior allow-keyboard></overlay-behavior>
+    <div style="height: 250px"></div>
+    3
+    <overlay-behavior></overlay-behavior>
+  </div>
+  4
+  <input type="text" value="regular input"><br>
+  5
   <overlay-behavior></overlay-behavior>
   <div style="height: 250px"></div>
-  <overlay-behavior></overlay-behavior>
-  <overlay-behavior></overlay-behavior>
-  <div style="height: 250px"></div>
-  <overlay-behavior allow-os-keyboard></overlay-behavior>
+  6
+  <input type="text" value="regular input"><br>
+  7
+  <overlay-behavior allow-keyboard></overlay-behavior>
+  8
+  <input type="text" value="regular input">
+
+  <div class="fixed-container">
+    Fixed <br>
+    9
+    <overlay-behavior></overlay-behavior>
+    10
+    <input type="text" value="regular input">
+  </div>
 </body>
 
 </html>
